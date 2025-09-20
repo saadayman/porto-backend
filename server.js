@@ -2,14 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const https = require('https');
-const http = require('http');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = 'mongodb+srv://sayman:sayman@cluster0.rl0sfdh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
@@ -23,7 +21,9 @@ mongoose.connect(MONGODB_URI)
 // });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://porto-frontend.onrender.com'
+}));
 app.use(express.json());
 // app.use('/api/contact');
 
@@ -192,74 +192,7 @@ app.patch('/api/contact/:id/status', async (req, res) => {
   }
 });
 
-// API Pinging functionality
-const pingExternalAPI = () => {
-  const options = {
-    hostname: 'backend-api-4kof.onrender.com',
-    port: 443,
-    path: '/api/health',
-    method: 'GET',
-    timeout: 10000
-  };
-
-  const req = https.request(options, (res) => {
-    console.log(`External API ping successful: ${res.statusCode}`);
-  });
-
-  req.on('error', (error) => {
-    console.warn('External API ping failed:', error.message);
-  });
-
-  req.on('timeout', () => {
-    console.warn('External API ping timeout');
-    req.destroy();
-  });
-
-  req.end();
-};
-
-const pingSelf = () => {
-  const options = {
-    hostname: 'localhost',
-    port: PORT,
-    path: '/api/health',
-    method: 'GET',
-    timeout: 5000
-  };
-
-  const req = http.request(options, (res) => {
-    console.log(`Self-ping successful: ${res.statusCode}`);
-  });
-
-  req.on('error', (error) => {
-    console.warn('Self-ping failed:', error.message);
-  });
-
-  req.on('timeout', () => {
-    console.warn('Self-ping timeout');
-    req.destroy();
-  });
-
-  req.end();
-};
-
-// Start pinging intervals
-const startPinging = () => {
-  // Ping external API every 30 seconds
-  setInterval(pingExternalAPI, 30000);
-
-  // Self-ping every minute to keep server alive
-  setInterval(pingSelf, 60000);
-
-  console.log('API pinging started:');
-  console.log('- External API: every 30 seconds');
-  console.log('- Self-ping: every minute');
-};
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
-
-  // Start pinging after server is ready
-  setTimeout(startPinging, 2000);
 });
