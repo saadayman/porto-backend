@@ -22,7 +22,7 @@ mongoose.connect(MONGODB_URI)
 
 // Middleware
 app.use(cors({
-  origin: 'https://porto-frontend.onrender.com'
+  origin: '*'
 }));
 app.use(express.json());
 // app.use('/api/contact');
